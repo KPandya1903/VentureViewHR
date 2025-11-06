@@ -8,7 +8,7 @@ import { UploadIcon } from './icons/UploadIcon';
 import * as pdfjsLib from 'pdfjs-dist';
 
 // Set worker path for pdfjs-dist from the import map
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdfjs-dist/build/pdf.worker.mjs';
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
 
 
 interface ResumeAnalyzerProps {

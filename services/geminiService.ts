@@ -6,7 +6,7 @@ import { ResumeAnalysis, MatchResult, InterviewAnalysisReport, InterviewAnswer }
 
 export const generateCoverLetter = async (jobDescription: string, resumeText: string): Promise<string> => {
   // Fix: Use process.env.API_KEY, check for its existence, and instantiate the client here.
-  const apiKey = process.env.API_KEY;
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   if (!apiKey) {
     return "Error: Gemini API key is not configured. Please set the API_KEY environment variable.";
   }
@@ -85,7 +85,7 @@ const resumeAnalysisSchema = {
 
 export const analyzeResume = async (resumeText: string): Promise<ResumeAnalysis> => {
   // Fix: Use process.env.API_KEY, check for its existence, and instantiate the client here.
-  const apiKey = process.env.API_KEY;
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("Gemini API key is not configured. Please set the API_KEY environment variable.");
   }
@@ -145,7 +145,7 @@ const matchResultSchema = {
 
 export const matchResumeToJob = async (resumeText: string, jobDescription: string): Promise<MatchResult> => {
     // Fix: Use process.env.API_KEY, check for its existence, and instantiate the client here.
-    const apiKey = process.env.API_KEY;
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
     if (!apiKey) {
         throw new Error("Gemini API key is not configured. Please set the API_KEY environment variable.");
     }
@@ -189,7 +189,7 @@ export const matchResumeToJob = async (resumeText: string, jobDescription: strin
 
 export const generateInterviewQuestions = async (resumeText: string): Promise<string[]> => {
     // Fix: Use process.env.API_KEY, check for its existence, and instantiate the client here.
-    const apiKey = process.env.API_KEY;
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
     if (!apiKey) {
         throw new Error("Gemini API key is not configured. Please set the API_KEY environment variable.");
     }
@@ -258,7 +258,7 @@ const interviewAnalysisSchema = {
 
 export const evaluateInterviewAnswers = async (answers: { question: string, transcript: string }[]): Promise<InterviewAnalysisReport> => {
     // Fix: Use process.env.API_KEY, check for its existence, and instantiate the client here.
-    const apiKey = process.env.API_KEY;
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
     if (!apiKey) {
         throw new Error("Gemini API key is not configured. Please set the API_KEY environment variable.");
     }
@@ -308,7 +308,7 @@ export const generateCandidateFeedbackEmail = async (
     decision: string
 ): Promise<string> => {
     // Fix: Use process.env.API_KEY, check for its existence, and instantiate the client here.
-    const apiKey = process.env.API_KEY;
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
     if (!apiKey) {
         throw new Error("Gemini API key is not configured. Please set the API_KEY environment variable.");
     }

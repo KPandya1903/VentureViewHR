@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { generateInterviewQuestions, evaluateInterviewAnswers } from '../services/geminiService';
+import { analyzeVideoEmotions, analyzeTranscriptBehavior } from '../services/humeService';
 import { InterviewAnswer, InterviewAnalysisReport } from '../types';
 import { SparklesIcon } from './icons/SparklesIcon';
 import { DocumentTextIcon } from './icons/DocumentTextIcon';
@@ -39,40 +40,72 @@ export const MockInterview: React.FC<MockInterviewProps> = ({ resumeText, setRes
     }
   }, [resumeText]);
 
-  const handleRecordingComplete = (transcript: string, videoUrl: string) => {
+  const handleRecordingComplete = useCallback(async (transcript: string, videoUrl: string) => {
+    console.log('🎯 handleRecordingComplete called!', { transcript, videoUrl });
+    
     const newAnswer: InterviewAnswer = {
       question: questions[currentQuestionIndex],
       transcript: transcript,
       videoUrl: videoUrl,
     };
     const updatedAnswers = [...answers, newAnswer];
+    console.log('📝 Updated answers:', updatedAnswers);
     setAnswers(updatedAnswers);
 
     if (currentQuestionIndex < questions.length - 1) {
+      console.log('➡️ Moving to next question:', currentQuestionIndex + 1);
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
       // All questions answered, now analyze
+      console.log('✅ All questions done, analyzing...');
       setStage('analyzing');
-      evaluateInterviewAnswers(updatedAnswers)
-        .then(report => {
-          // Merge the videoUrl back into the report from the analysis
-          const finalReport = {
-            ...report,
-            answers: report.answers.map((ans, idx) => ({
-              ...ans,
-              videoUrl: updatedAnswers[idx].videoUrl,
-            })),
-          };
-          setAnalysisReport(finalReport);
-          setStage('complete');
-        })
-        .catch(err => {
-          console.error(err);
-          setError('Failed to analyze your interview answers. Please try again.');
-          setStage('in_progress'); // Go back to last question view
+      
+      try {
+        // Run analysis in parallel for speed
+        const analysisPromise = evaluateInterviewAnswers(updatedAnswers);
+        
+        // Analyze emotions for each video (this runs in background)
+        const emotionPromises = updatedAnswers.map(async (answer) => {
+          if (answer.videoUrl) {
+            try {
+              const [emotionData, behavioralData] = await Promise.all([
+                analyzeVideoEmotions(answer.videoUrl),
+                Promise.resolve(analyzeTranscriptBehavior(answer.transcript))
+              ]);
+              return { emotionData, behavioralData };
+            } catch (err) {
+              console.error('Emotion analysis failed:', err);
+              return { emotionData: null, behavioralData: analyzeTranscriptBehavior(answer.transcript) };
+            }
+          }
+          return { emotionData: null, behavioralData: analyzeTranscriptBehavior(answer.transcript) };
         });
+
+        const [report, emotionResults] = await Promise.all([
+          analysisPromise,
+          Promise.all(emotionPromises)
+        ]);
+
+        // Merge emotion data into report
+        const finalReport = {
+          ...report,
+          answers: report.answers.map((ans, idx) => ({
+            ...ans,
+            videoUrl: updatedAnswers[idx].videoUrl,
+            emotionAnalysis: emotionResults[idx].emotionData,
+            behavioralMetrics: emotionResults[idx].behavioralData,
+          })),
+        };
+
+        setAnalysisReport(finalReport);
+        setStage('complete');
+      } catch (err) {
+        console.error(err);
+        setError('Failed to analyze your interview answers. Please try again.');
+        setStage('in_progress');
+      }
     }
-  };
+  }, [questions, currentQuestionIndex, answers]);
 
   const handleStartOver = () => {
     setStage('setup');
@@ -148,6 +181,7 @@ export const MockInterview: React.FC<MockInterviewProps> = ({ resumeText, setRes
       case 'in_progress':
         return (
           <InterviewRecorder
+            key={currentQuestionIndex}
             question={questions[currentQuestionIndex]}
             questionNumber={currentQuestionIndex + 1}
             totalQuestions={questions.length}

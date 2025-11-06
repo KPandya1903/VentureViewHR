@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VentureView API Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #4f46e5;
+            margin-bottom: 30px;
+        }
+        button {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px 10px 10px 0;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #4338ca;
+        }
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        pre {
+            background: #1e293b;
+            color: #10b981;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            max-height: 400px;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 VentureView API Test</h1>
+        
+        <div>
+            <button onclick="testRoot()">Test Root Endpoint</button>
+            <button onclick="testCompanies()">Test Get Companies</button>
+            <button onclick="testLogin()">Test Login (Student)</button>
+            <button onclick="testHRApplications()">Test HR Dashboard</button>
+            <button onclick="clearResults()">Clear Results</button>
+        </div>
+
+        <div id="status"></div>
+        <pre id="results"></pre>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3001';
+
+        function showStatus(message, isError = false) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="status ${isError ? 'error' : 'success'}">${message}</div>`;
+        }
+
+        function showResults(data) {
+            document.getElementById('results').textContent = JSON.stringify(data, null, 2);
+        }
+
+        function clearResults() {
+            document.getElementById('results').textContent = '';
+            document.getElementById('status').innerHTML = '';
+        }
+
+        async function testRoot() {
+            try {
+                showStatus('Testing root endpoint...');
+                const response = await fetch(`${API_BASE}/`);
+                const data = await response.json();
+                showStatus('✓ Root endpoint working!');
+                showResults(data);
+            } catch (error) {
+                showStatus('✗ Error: ' + error.message, true);
+                showResults({ error: error.message });
+            }
+        }
+
+        async function testCompanies() {
+            try {
+                showStatus('Fetching companies...');
+                const response = await fetch(`${API_BASE}/api/companies`);
+                const data = await response.json();
+                showStatus(`✓ Found ${data.length} companies!`);
+                showResults(data);
+            } catch (error) {
+                showStatus('✗ Error: ' + error.message, true);
+                showResults({ error: error.message });
+            }
+        }
+
+        async function testLogin() {
+            try {
+                showStatus('Testing login...');
+                const response = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'student@ventureview.com',
+                        password: 'student123'
+                    })
+                });
+                const data = await response.json();
+                showStatus('✓ Login successful!');
+                showResults(data);
+            } catch (error) {
+                showStatus('✗ Error: ' + error.message, true);
+                showResults({ error: error.message });
+            }
+        }
+
+        async function testHRApplications() {
+            try {
+                showStatus('Fetching HR applications...');
+                const response = await fetch(`${API_BASE}/api/applications/hr`);
+                const data = await response.json();
+                showStatus(`✓ Found ${data.length} applications!`);
+                showResults(data);
+            } catch (error) {
+                showStatus('✗ Error: ' + error.message, true);
+                showResults({ error: error.message });
+            }
+        }
+
+        // Auto-test on load
+        window.onload = () => {
+            setTimeout(testRoot, 500);
+        };
+    </script>
+</body>
+</html>
