@@ -1,0 +1,8 @@
+{
+  "name": "Copy of Copy of VentureView HR - Candidate Portal",
+  "description": "An AI-powered job board for candidates to find jobs and generate tailored cover letters using Gemini. This application serves as a frontend demonstration for the VentureView HR platform.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
